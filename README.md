@@ -2,6 +2,18 @@
 
 React Native New Architecture SDK for the Turkish electronic national identity card. The first integration slice exposes a front-facing camera capability check through Kotlin on Android and Swift on iOS. The check does not open the camera or request permission.
 
+## Validate TD1 text
+
+`parseTd1Mrz(text)` accepts one three-line MRZ, with LF or CRLF line breaks and an optional final newline. A valid result contains parsed fields. An invalid result contains issue codes without the original text. Dates retain their printed `YYMMDD` values and birth-date fillers.
+
+```ts
+import {parseTd1Mrz} from '@burakbyrmss/react-native-kyc';
+
+const result = parseTd1Mrz(mrzText);
+```
+
+Validation covers TD1 field syntax and check digits. OCR, Turkish card-specific field mapping, and document authenticity require separate checks. Run the parser tests with `npm test` on Node 22.18 or later.
+
 ## Verify with Expo
 
 The `example` app uses Expo SDK 58 and a development build. It installs the SDK tarball and calls the public API when you tap **Check front camera**.

@@ -24,6 +24,7 @@
     "pack:example": "npm pack --pack-destination example",
     "example:build:ios": "npm --prefix example run build:ios",
     "typecheck": "tsc --noEmit",
+    "test": "node --test tests/td1.test.mjs",
     "codegen": "node node_modules/react-native/scripts/generate-codegen-artifacts.js --path . --outputPath build/codegen --targetPlatform all --source library"
   },
   "peerDependencies": {
