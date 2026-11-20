@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "KYC Smoke Test",
+    "slug": "kyc-smoke-test",
+    "version": "0.1.0",
+    "scheme": "kyc-smoke-test",
+    "ios": {
+      "bundleIdentifier": "com.burakbyrmss.kycsmoketest",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.burakbyrmss.kycsmoketest"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "cf744aad-e59d-46de-a0e2-367e12ed8dff"
+      }
+    },
+    "owner": "zercek23"
+  }
+}

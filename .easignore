@@ -1,0 +1,17 @@
+node_modules/
+build/
+.gradle/
+*.tgz
+/example/.expo/
+/example/android/
+/example/ios/
+/example/expo-env.d.ts
+/example/dist/
+.env*
+*.jks
+*.keystore
+*.mobileprovision
+*.p8
+*.p12
+credentials.json
+!/example/burakbyrmss-react-native-kyc-*.tgz

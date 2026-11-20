@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: example/.nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            example/package-lock.json
+      - run: npm ci
+      - name: Check SDK types
+        run: npm run typecheck
+      - name: Generate native bindings
+        run: npm run codegen
+      - name: Pack the SDK from this checkout
+        id: pack
+        run: |
+          archive="$(npm pack --pack-destination example --silent)"
+          echo "archive=$archive" >> "$GITHUB_OUTPUT"
+      - name: Lock and install the packed SDK in Expo
+        working-directory: example
+        env:
+          SDK_ARCHIVE: ${{ steps.pack.outputs.archive }}
+        run: |
+          npm install --package-lock-only --no-audit --no-fund "./$SDK_ARCHIVE"
+          npm ci
+      - name: Generate Expo types
+        working-directory: example
+        run: npm run typegen
+      - name: Type check
+        working-directory: example
+        run: npm run typecheck
+      - name: Lint
+        working-directory: example
+        run: npm run lint
+      - name: Format
+        working-directory: example
+        run: npm run format:check
+      - name: Test
+        working-directory: example
+        run: npm test -- --ci
+      - name: Expo Doctor
+        working-directory: example
+        run: npx --no-install expo-doctor
+      - name: Audit
+        working-directory: example
+        run: npm audit --audit-level=high
+      - name: Save the checked Expo build inputs
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: actions/upload-artifact@v4
+        with:
+          name: expo-build-inputs
+          path: |
+            example/package.json
+            example/package-lock.json
+            example/${{ steps.pack.outputs.archive }}
+          if-no-files-found: error
+          overwrite: true
+
+  eas-development-build:
+    needs: check
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: eas-development-build
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: example/.nvmrc
+          cache: npm
+          cache-dependency-path: example/package-lock.json
+      - uses: actions/download-artifact@v4
+        with:
+          name: expo-build-inputs
+          path: example
+      - name: Install Expo build dependencies
+        working-directory: example
+        run: npm ci
+      - uses: expo/expo-github-action@8.2.1
+        with:
+          eas-version: latest
+          packager: npm
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Queue iOS and Android development builds
+        working-directory: example
+        run: |
+          eas build --profile development --platform all --non-interactive --no-wait --json > "$RUNNER_TEMP/eas-builds.json"
+          node - "$RUNNER_TEMP/eas-builds.json" >> "$GITHUB_STEP_SUMMARY" <<'NODE'
+          const fs = require('node:fs');
+          const builds = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          const {owner, slug} = require('./app.json').expo;
+
+          console.log('## Queued EAS development builds');
+          for (const {platform, id} of builds) {
+            console.log(`- [${platform}](https://expo.dev/accounts/${owner}/projects/${slug}/builds/${id})`);
+          }
+          NODE

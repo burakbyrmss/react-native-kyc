@@ -1,0 +1,50 @@
+{
+  "name": "@burakbyrmss/react-native-kyc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "React Native SDK for Turkish electronic identity cards",
+  "homepage": "https://github.com/burakbyrmss/react-native-kyc",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/burakbyrmss/react-native-kyc.git"
+  },
+  "license": "UNLICENSED",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "react-native": "src/index.ts",
+  "files": [
+    "src",
+    "android",
+    "ios",
+    "ReactNativeKyc.podspec",
+    "react-native.config.js",
+    "README.md"
+  ],
+  "scripts": {
+    "pack:example": "npm pack --pack-destination example",
+    "example:build:ios": "npm --prefix example run build:ios",
+    "typecheck": "tsc --noEmit",
+    "codegen": "node node_modules/react-native/scripts/generate-codegen-artifacts.js --path . --outputPath build/codegen --targetPlatform all --source library"
+  },
+  "peerDependencies": {
+    "react": "^19.3.0",
+    "react-native": "0.88.x"
+  },
+  "devDependencies": {
+    "react-native": "0.88.1",
+    "typescript": "~5.9.3"
+  },
+  "codegenConfig": {
+    "name": "RNKycSpec",
+    "type": "modules",
+    "jsSrcsDir": "src/specs",
+    "android": {
+      "javaPackageName": "com.reactnativekyc"
+    },
+    "ios": {
+      "modulesProvider": {
+        "NativeKycFace": "RNKycFaceModule"
+      }
+    }
+  }
+}
